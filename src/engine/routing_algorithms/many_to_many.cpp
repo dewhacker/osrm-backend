@@ -8,7 +8,7 @@ namespace routing_algorithms
 {
 
 std::vector<EdgeWeight> ManyToManyRouting::
-operator()(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+operator()(const FacadeT &facade,
            const std::vector<PhantomNode> &phantom_nodes,
            const std::vector<std::size_t> &source_indices,
            const std::vector<std::size_t> &target_indices) const
@@ -20,7 +20,7 @@ operator()(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
     const auto number_of_entries = number_of_sources * number_of_targets;
     std::vector<EdgeWeight> result_table(number_of_entries, std::numeric_limits<EdgeWeight>::max());
 
-    engine_working_data.InitializeOrClearFirstThreadLocalStorage(facade->GetNumberOfNodes());
+    engine_working_data.InitializeOrClearFirstThreadLocalStorage(facade.GetNumberOfNodes());
 
     QueryHeap &query_heap = *(engine_working_data.forward_heap_1);
 
@@ -120,7 +120,7 @@ operator()(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
 }
 
 void ManyToManyRouting::ForwardRoutingStep(
-    const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    const FacadeT &facade,
     const unsigned row_idx,
     const unsigned number_of_targets,
     QueryHeap &query_heap,

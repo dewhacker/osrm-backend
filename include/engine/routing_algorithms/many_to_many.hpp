@@ -1,8 +1,9 @@
 #ifndef MANY_TO_MANY_ROUTING_HPP
 #define MANY_TO_MANY_ROUTING_HPP
 
-#include "engine/datafacade/datafacade_base.hpp"
 #include "engine/routing_algorithms/routing_base.hpp"
+
+#include "engine/algorithm.hpp"
 #include "engine/search_engine_data.hpp"
 #include "util/typedefs.hpp"
 
@@ -20,9 +21,12 @@ namespace engine
 namespace routing_algorithms
 {
 
-class ManyToManyRouting final : public BasicRoutingInterface
+template <typename AlgorithmT> class ManyToManyRouting;
+
+template <> class ManyToManyRouting<algorithm::CH> final : public BasicRouting<algorithm::CH>
 {
-    using super = BasicRoutingInterface;
+    using FacadeT = datafacade::ContiguousInternalMemoryDataFacade<algorithm::CH>;
+    using SuperT = BasicRouting<algorithm::CH>;
     using QueryHeap = SearchEngineData::QueryHeap;
     SearchEngineData &engine_working_data;
 
@@ -46,60 +50,32 @@ class ManyToManyRouting final : public BasicRoutingInterface
     }
 
     std::vector<EdgeWeight>
-    operator()(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    operator()(const FacadeT &facade,
                const std::vector<PhantomNode> &phantom_nodes,
                const std::vector<std::size_t> &source_indices,
                const std::vector<std::size_t> &target_indices) const;
 
-    void ForwardRoutingStep(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    void ForwardRoutingStep(const FacadeT &facade,
                             const unsigned row_idx,
                             const unsigned number_of_targets,
                             QueryHeap &query_heap,
                             const SearchSpaceWithBuckets &search_space_with_buckets,
                             std::vector<EdgeWeight> &result_table) const;
 
-    void BackwardRoutingStep(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    void BackwardRoutingStep(const FacadeT %facade,
                              const unsigned column_idx,
                              QueryHeap &query_heap,
                              SearchSpaceWithBuckets &search_space_with_buckets) const;
 
     template <bool forward_direction>
-    inline void RelaxOutgoingEdges(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    inline void RelaxOutgoingEdges(const FacadeT &facade,
                                    const NodeID node,
                                    const EdgeWeight weight,
-                                   QueryHeap &query_heap) const
-    {
-        for (auto edge : facade->GetAdjacentEdgeRange(node))
-        {
-            const auto &data = facade->GetEdgeData(edge);
-            const bool direction_flag = (forward_direction ? data.forward : data.backward);
-            if (direction_flag)
-            {
-                const NodeID to = facade->GetTarget(edge);
-                const int edge_weight = data.weight;
-
-                BOOST_ASSERT_MSG(edge_weight > 0, "edge_weight invalid");
-                const int to_weight = weight + edge_weight;
-
-                // New Node discovered -> Add to Heap + Node Info Storage
-                if (!query_heap.WasInserted(to))
-                {
-                    query_heap.Insert(to, to_weight, node);
-                }
-                // Found a shorter Path -> Update weight
-                else if (to_weight < query_heap.GetKey(to))
-                {
-                    // new parent
-                    query_heap.GetData(to).parent = node;
-                    query_heap.DecreaseKey(to, to_weight);
-                }
-            }
-        }
-    }
+                                   QueryHeap &query_heap) const;
 
     // Stalling
     template <bool forward_direction>
-    inline bool StallAtNode(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    inline bool StallAtNode(const FacadeT &facade,
                             const NodeID node,
                             const EdgeWeight weight,
                             QueryHeap &query_heap) const

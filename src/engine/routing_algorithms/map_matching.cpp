@@ -23,7 +23,7 @@ unsigned MapMatching::GetMedianSampleTime(const std::vector<unsigned> &timestamp
 }
 
 SubMatchingList MapMatching::
-operator()(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+operator()(const FacadeT &facade,
            const CandidateLists &candidates_list,
            const std::vector<util::Coordinate> &trace_coordinates,
            const std::vector<unsigned> &trace_timestamps,
@@ -50,7 +50,7 @@ operator()(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
     const auto max_distance_delta = [&] {
         if (use_timestamps)
         {
-            return median_sample_time * facade->GetMapMatchingMaxSpeed();
+            return median_sample_time * facade.GetMapMatchingMaxSpeed();
         }
         else
         {
@@ -109,8 +109,8 @@ operator()(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
         return sub_matchings;
     }
 
-    engine_working_data.InitializeOrClearFirstThreadLocalStorage(facade->GetNumberOfNodes());
-    engine_working_data.InitializeOrClearSecondThreadLocalStorage(facade->GetNumberOfNodes());
+    engine_working_data.InitializeOrClearFirstThreadLocalStorage(facade.GetNumberOfNodes());
+    engine_working_data.InitializeOrClearSecondThreadLocalStorage(facade.GetNumberOfNodes());
 
     QueryHeap &forward_heap = *(engine_working_data.forward_heap_1);
     QueryHeap &reverse_heap = *(engine_working_data.reverse_heap_1);
@@ -182,7 +182,7 @@ operator()(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
                     reverse_heap.Clear();
 
                     double network_distance;
-                    if (facade->GetCoreSize() > 0)
+                    if (facade.GetCoreSize() > 0)
                     {
                         forward_core_heap.Clear();
                         reverse_core_heap.Clear();

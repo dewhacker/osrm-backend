@@ -8,7 +8,7 @@ namespace routing_algorithms
 {
 
 void BasicRoutingInterface::RoutingStep(
-    const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    const FacadeT &facade,
     SearchEngineData::QueryHeap &forward_heap,
     SearchEngineData::QueryHeap &reverse_heap,
     NodeID &middle_node_id,
@@ -35,13 +35,13 @@ void BasicRoutingInterface::RoutingStep(
                 new_weight < 0)
             {
                 // check whether there is a loop present at the node
-                for (const auto edge : facade->GetAdjacentEdgeRange(node))
+                for (const auto edge : facade.GetAdjacentEdgeRange(node))
                 {
-                    const EdgeData &data = facade->GetEdgeData(edge);
+                    const EdgeData &data = facade.GetEdgeData(edge);
                     bool forward_directionFlag = (forward_direction ? data.forward : data.backward);
                     if (forward_directionFlag)
                     {
-                        const NodeID to = facade->GetTarget(edge);
+                        const NodeID to = facade.GetTarget(edge);
                         if (to == node)
                         {
                             const EdgeWeight edge_weight = data.weight;
@@ -77,13 +77,13 @@ void BasicRoutingInterface::RoutingStep(
     // Stalling
     if (stalling)
     {
-        for (const auto edge : facade->GetAdjacentEdgeRange(node))
+        for (const auto edge : facade.GetAdjacentEdgeRange(node))
         {
-            const EdgeData &data = facade->GetEdgeData(edge);
+            const EdgeData &data = facade.GetEdgeData(edge);
             const bool reverse_flag = ((!forward_direction) ? data.forward : data.backward);
             if (reverse_flag)
             {
-                const NodeID to = facade->GetTarget(edge);
+                const NodeID to = facade.GetTarget(edge);
                 const EdgeWeight edge_weight = data.weight;
 
                 BOOST_ASSERT_MSG(edge_weight > 0, "edge_weight invalid");
@@ -99,13 +99,13 @@ void BasicRoutingInterface::RoutingStep(
         }
     }
 
-    for (const auto edge : facade->GetAdjacentEdgeRange(node))
+    for (const auto edge : facade.GetAdjacentEdgeRange(node))
     {
-        const EdgeData &data = facade->GetEdgeData(edge);
+        const EdgeData &data = facade.GetEdgeData(edge);
         bool forward_directionFlag = (forward_direction ? data.forward : data.backward);
         if (forward_directionFlag)
         {
-            const NodeID to = facade->GetTarget(edge);
+            const NodeID to = facade.GetTarget(edge);
             const EdgeWeight edge_weight = data.weight;
 
             BOOST_ASSERT_MSG(edge_weight > 0, "edge_weight invalid");
@@ -128,16 +128,16 @@ void BasicRoutingInterface::RoutingStep(
 }
 
 EdgeWeight
-BasicRoutingInterface::GetLoopWeight(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+BasicRoutingInterface::GetLoopWeight(const FacadeT &facade,
                                      NodeID node) const
 {
     EdgeWeight loop_weight = INVALID_EDGE_WEIGHT;
-    for (auto edge : facade->GetAdjacentEdgeRange(node))
+    for (auto edge : facade.GetAdjacentEdgeRange(node))
     {
-        const auto &data = facade->GetEdgeData(edge);
+        const auto &data = facade.GetEdgeData(edge);
         if (data.forward)
         {
-            const NodeID to = facade->GetTarget(edge);
+            const NodeID to = facade.GetTarget(edge);
             if (to == node)
             {
                 loop_weight = std::min(loop_weight, data.weight);
@@ -155,7 +155,7 @@ BasicRoutingInterface::GetLoopWeight(const std::shared_ptr<const datafacade::Bas
  * @param unpacked_path the sequence of original NodeIDs that make up the expanded CH edge
  */
 void BasicRoutingInterface::UnpackEdge(
-    const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    const FacadeT &facade,
     const NodeID from,
     const NodeID to,
     std::vector<NodeID> &unpacked_path) const
@@ -213,7 +213,7 @@ void BasicRoutingInterface::RetrievePackedPathFromSingleHeap(
 // && source_phantom.GetForwardWeightPlusOffset() > target_phantom.GetForwardWeightPlusOffset())
 // requires
 // a force loop, if the heaps have been initialized with positive offsets.
-void BasicRoutingInterface::Search(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+void BasicRoutingInterface::Search(const FacadeT &facade,
                                    SearchEngineData::QueryHeap &forward_heap,
                                    SearchEngineData::QueryHeap &reverse_heap,
                                    std::int32_t &weight,
@@ -296,7 +296,7 @@ void BasicRoutingInterface::Search(const std::shared_ptr<const datafacade::BaseD
 // requires
 // a force loop, if the heaps have been initialized with positive offsets.
 void BasicRoutingInterface::SearchWithCore(
-    const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    const FacadeT &facade,
     SearchEngineData::QueryHeap &forward_heap,
     SearchEngineData::QueryHeap &reverse_heap,
     SearchEngineData::QueryHeap &forward_core_heap,
@@ -325,7 +325,7 @@ void BasicRoutingInterface::SearchWithCore(
     {
         if (!forward_heap.Empty())
         {
-            if (facade->IsCoreNode(forward_heap.Min()))
+            if (facade.IsCoreNode(forward_heap.Min()))
             {
                 const NodeID node = forward_heap.DeleteMin();
                 const int key = forward_heap.GetKey(node);
@@ -347,7 +347,7 @@ void BasicRoutingInterface::SearchWithCore(
         }
         if (!reverse_heap.Empty())
         {
-            if (facade->IsCoreNode(reverse_heap.Min()))
+            if (facade.IsCoreNode(reverse_heap.Min()))
             {
                 const NodeID node = reverse_heap.DeleteMin();
                 const int key = reverse_heap.GetKey(node);
@@ -442,7 +442,7 @@ void BasicRoutingInterface::SearchWithCore(
     BOOST_ASSERT_MSG((SPECIAL_NODEID != middle && INVALID_EDGE_WEIGHT != weight), "no path found");
 
     // we need to unpack sub path from core heaps
-    if (facade->IsCoreNode(middle))
+    if (facade.IsCoreNode(middle))
     {
         if (weight != forward_core_heap.GetKey(middle) + reverse_core_heap.GetKey(middle))
         {
@@ -500,7 +500,7 @@ bool BasicRoutingInterface::NeedsLoopBackwards(const PhantomNode &source_phantom
 }
 
 double BasicRoutingInterface::GetPathDistance(
-    const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    const FacadeT &facade,
     const std::vector<NodeID> &packed_path,
     const PhantomNode &source_phantom,
     const PhantomNode &target_phantom) const
@@ -520,7 +520,7 @@ double BasicRoutingInterface::GetPathDistance(
     double prev_cos = std::cos(prev_lat);
     for (const auto &p : unpacked_path)
     {
-        const auto current_coordinate = facade->GetCoordinateOfNode(p.turn_via_node);
+        const auto current_coordinate = facade.GetCoordinateOfNode(p.turn_via_node);
 
         const double current_lat =
             static_cast<double>(toFloating(current_coordinate.lat)) * DEGREE_TO_RAD;
@@ -560,7 +560,7 @@ double BasicRoutingInterface::GetPathDistance(
 // If heaps should be adjusted to be initialized outside of this function,
 // the addition of force_loop parameters might be required
 double BasicRoutingInterface::GetNetworkDistanceWithCore(
-    const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    const FacadeT &facade,
     SearchEngineData::QueryHeap &forward_heap,
     SearchEngineData::QueryHeap &reverse_heap,
     SearchEngineData::QueryHeap &forward_core_heap,
@@ -626,7 +626,7 @@ double BasicRoutingInterface::GetNetworkDistanceWithCore(
 // If heaps should be adjusted to be initialized outside of this function,
 // the addition of force_loop parameters might be required
 double BasicRoutingInterface::GetNetworkDistance(
-    const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    const FacadeT &facade,
     SearchEngineData::QueryHeap &forward_heap,
     SearchEngineData::QueryHeap &reverse_heap,
     const PhantomNode &source_phantom,

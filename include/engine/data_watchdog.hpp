@@ -3,6 +3,7 @@
 
 #include "engine/datafacade/contiguous_internalmem_datafacade.hpp"
 #include "engine/datafacade/shared_memory_allocator.hpp"
+#include "engine/datafacade_provider.hpp"
 
 #include "storage/shared_barriers.hpp"
 #include "storage/shared_datatype.hpp"
@@ -24,8 +25,10 @@ namespace engine
 // This class monitors the shared memory region that contains the pointers to
 // the data and layout regions that should be used. This region is updated
 // once a new dataset arrives.
-class DataWatchdog
+template <typename AlgorithmT> class DataWatchdog final : public DataFacadeProvider<AlgorithmT>
 {
+    using FacadeT = datafacade::ContiguousInternalMemoryDataFacade<AlgorithmT>;
+
   public:
     DataWatchdog() : active(true), timestamp(0)
     {
@@ -37,15 +40,16 @@ class DataWatchdog
             auto shared_memory = makeSharedMemory(storage::CURRENT_REGION);
             auto current = static_cast<storage::SharedDataTimestamp *>(shared_memory->Ptr());
 
-            facade = std::make_shared<datafacade::ContiguousInternalMemoryDataFacade>(
-                std::make_unique<datafacade::SharedMemoryAllocator>(current->region));
+            facade = std::make_shared<const FacadeT>(
+                std::make_shared<datafacade::SharedMemoryAllocator>(current->region));
+
             timestamp = current->timestamp;
         }
 
         watcher = std::thread(&DataWatchdog::Run, this);
     }
 
-    ~DataWatchdog()
+    virtual ~DataWatchdog()
     {
         active = false;
         barrier.region_condition.notify_all();
@@ -58,7 +62,7 @@ class DataWatchdog
         return storage::SharedMemory::RegionExists(storage::CURRENT_REGION);
     }
 
-    auto GetDataFacade() const { return facade; }
+    std::shared_ptr<const FacadeT> Get() const final override { return facade; }
 
   private:
     void Run()
@@ -78,8 +82,8 @@ class DataWatchdog
 
             if (timestamp != current->timestamp)
             {
-                facade = std::make_shared<datafacade::ContiguousInternalMemoryDataFacade>(
-                    std::make_unique<datafacade::SharedMemoryAllocator>(current->region));
+                facade = std::make_shared<const FacadeT>(
+                    std::make_shared<datafacade::SharedMemoryAllocator>(current->region));
                 timestamp = current->timestamp;
                 util::Log() << "updated facade to region "
                             << storage::regionToString(current->region) << " with timestamp "
@@ -94,7 +98,7 @@ class DataWatchdog
     std::thread watcher;
     bool active;
     unsigned timestamp;
-    std::shared_ptr<datafacade::ContiguousInternalMemoryDataFacade> facade;
+    std::shared_ptr<const FacadeT> facade;
 };
 }
 }

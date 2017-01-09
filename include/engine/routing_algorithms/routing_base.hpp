@@ -2,10 +2,13 @@
 #define ROUTING_BASE_HPP
 
 #include "extractor/guidance/turn_instruction.hpp"
-#include "engine/datafacade/datafacade_base.hpp"
+
+#include "engine/algorithm.hpp"
+#include "engine/datafacade/contiguous_internalmem_datafacade.hpp"
 #include "engine/edge_unpacker.hpp"
 #include "engine/internal_route_result.hpp"
 #include "engine/search_engine_data.hpp"
+
 #include "util/coordinate_calculation.hpp"
 #include "util/guidance/turn_bearing.hpp"
 #include "util/typedefs.hpp"
@@ -31,10 +34,15 @@ namespace engine
 namespace routing_algorithms
 {
 
-class BasicRoutingInterface
+template <typename AlgorithmT> class BasicRouting;
+
+// TODO: There is no reason these functions are contained in a class other then for namespace
+// purposes. This should be a namespace with free functions.
+template <> class BasicRouting<algorithm::CH>
 {
-  protected:
-    using EdgeData = datafacade::BaseDataFacade::EdgeData;
+  private:
+    using FacadeT = datafacade::ContiguousInternalMemoryDataFacade<algorithm::CH>;
+    using EdgeData = typename FacadeT::EdgeData;
 
   public:
     /*
@@ -66,7 +74,7 @@ class BasicRoutingInterface
     Since we are dealing with a graph that contains _negative_ edges,
     we need to add an offset to the termination criterion.
     */
-    void RoutingStep(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    void RoutingStep(const FacadeT &facade,
                      SearchEngineData::QueryHeap &forward_heap,
                      SearchEngineData::QueryHeap &reverse_heap,
                      NodeID &middle_node_id,
@@ -77,11 +85,10 @@ class BasicRoutingInterface
                      const bool force_loop_forward,
                      const bool force_loop_reverse) const;
 
-    EdgeWeight GetLoopWeight(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
-                             NodeID node) const;
+    EdgeWeight GetLoopWeight(const FacadeT &facade, NodeID node) const;
 
     template <typename RandomIter>
-    void UnpackPath(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    void UnpackPath(const FacadeT &facade,
                     RandomIter packed_path_begin,
                     RandomIter packed_path_end,
                     const PhantomNodes &phantom_node_pair,
@@ -303,7 +310,7 @@ class BasicRoutingInterface
      * @param to the node the CH edge finishes at
      * @param unpacked_path the sequence of original NodeIDs that make up the expanded CH edge
      */
-    void UnpackEdge(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    void UnpackEdge(const FacadeT &facade,
                     const NodeID from,
                     const NodeID to,
                     std::vector<NodeID> &unpacked_path) const;
@@ -329,7 +336,7 @@ class BasicRoutingInterface
     // && source_phantom.GetForwardWeightPlusOffset() > target_phantom.GetForwardWeightPlusOffset())
     // requires
     // a force loop, if the heaps have been initialized with positive offsets.
-    void Search(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    void Search(const FacadeT &facade,
                 SearchEngineData::QueryHeap &forward_heap,
                 SearchEngineData::QueryHeap &reverse_heap,
                 std::int32_t &weight,
@@ -347,7 +354,7 @@ class BasicRoutingInterface
     // && source_phantom.GetForwardWeightPlusOffset() > target_phantom.GetForwardWeightPlusOffset())
     // requires
     // a force loop, if the heaps have been initialized with positive offsets.
-    void SearchWithCore(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    void SearchWithCore(const FacadeT &facade,
                         SearchEngineData::QueryHeap &forward_heap,
                         SearchEngineData::QueryHeap &reverse_heap,
                         SearchEngineData::QueryHeap &forward_core_heap,
@@ -364,7 +371,7 @@ class BasicRoutingInterface
     bool NeedsLoopBackwards(const PhantomNode &source_phantom,
                             const PhantomNode &target_phantom) const;
 
-    double GetPathDistance(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    double GetPathDistance(const FacadeT &facade,
                            const std::vector<NodeID> &packed_path,
                            const PhantomNode &source_phantom,
                            const PhantomNode &target_phantom) const;
@@ -373,7 +380,7 @@ class BasicRoutingInterface
     // If heaps should be adjusted to be initialized outside of this function,
     // the addition of force_loop parameters might be required
     double
-    GetNetworkDistanceWithCore(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    GetNetworkDistanceWithCore(const FacadeT &facade,
                                SearchEngineData::QueryHeap &forward_heap,
                                SearchEngineData::QueryHeap &reverse_heap,
                                SearchEngineData::QueryHeap &forward_core_heap,
@@ -385,7 +392,7 @@ class BasicRoutingInterface
     // Requires the heaps for be empty
     // If heaps should be adjusted to be initialized outside of this function,
     // the addition of force_loop parameters might be required
-    double GetNetworkDistance(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+    double GetNetworkDistance(const FacadeT &facade,
                               SearchEngineData::QueryHeap &forward_heap,
                               SearchEngineData::QueryHeap &reverse_heap,
                               const PhantomNode &source_phantom,
