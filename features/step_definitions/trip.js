@@ -105,7 +105,7 @@ module.exports = function () {
                             for (var ni=0; ni<sub.length; ni++) {
                                 var node = this.findNodeByName(sub[ni]),
                                     outNode = subTrips[si][ni];
-                                    console.log('outNode', outNode, ' node', node, '\n');
+                                    console.log('outNode[0]', outNode[0], ' outNode[1]', outNode[1], '\n');
                                 if (this.FuzzyMatch.matchLocation(outNode, node)) {
                                     encodedResult += sub[ni]; console.log("encodedResult", encodedResult);
                                     extendedTarget += sub[ni]; console.log("extendedTarget", extendedTarget);
@@ -123,7 +123,7 @@ module.exports = function () {
                         got.via_points = row.via_points;
                     } else {
                         got.trips = encodedResult;
-                        got.trips = extendedTarget;
+                        got.trips = encodedResult;
                     }
 
                     got.durations = trip_durations;
