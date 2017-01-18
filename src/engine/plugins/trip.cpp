@@ -59,7 +59,7 @@ struct SCC_Component
         return range.size() - 1;
     }
 
-    const std::vector<NodeID> component;
+    std::vector<NodeID> component;
     std::vector<std::size_t> range;
 };
 
@@ -229,47 +229,91 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
     // get scc components
     SCC_Component scc = SplitUnaccessibleLocations(number_of_locations, result_table);
 
+    SCC_Component ftse_scc = scc;
+
+    if (parameters.source > -1 && parameters.destination > -1) {
+
+        for (std::size_t i = 0; ftse_scc.component.size(); i++) {
+            if (ftse_scc.component[i] == parameters.destination) {
+                ftse_scc.component.erase(ftse_scc.component.begin() + i);
+                // ftse_scc.component.resize();
+
+                for (std::size_t k = 0; k < scc.GetNumberOfComponents(); ++k) {
+                    if (ftse_scc.range[k] > i) {
+                        ftse_scc.range[k] = ftse_scc.range[k] - 1;
+                    }
+                }
+                break;
+            }
+        }
+        std::cout << "scc.component.size(): " << scc.component.size() << std::endl;
+        std::cout << "scc.component: ";
+        for (auto i : scc.component) {
+            std::cout << ' ' << i;
+        }
+        std::cout << '\n';
+        std::cout << "ftse_scc.component.size(): " << ftse_scc.component.size() << std::endl;
+        std::cout << "ftse_scc.GetNumberOfComponents(): " << ftse_scc.GetNumberOfComponents();
+        std::cout << "ftse_scc.component: ";
+        for (auto i : ftse_scc.component) {
+            std::cout << ' ' << i;
+        }
+        std::cout << '\n';
+    }
+
+
     std::vector<std::vector<NodeID>> trips;
-    trips.reserve(scc.GetNumberOfComponents());
+    trips.reserve(ftse_scc.GetNumberOfComponents());
     // run Trip computation for every SCC
-    for (std::size_t k = 0; k < scc.GetNumberOfComponents(); ++k)
+    for (std::size_t k = 0; k < ftse_scc.GetNumberOfComponents(); ++k)
     {
-        const auto component_size = scc.range[k + 1] - scc.range[k];
+        const auto component_size = ftse_scc.range[k + 1] - ftse_scc.range[k];
 
         BOOST_ASSERT_MSG(component_size > 0, "invalid component size");
 
         std::vector<NodeID> scc_route;
-        auto route_begin = std::begin(scc.component) + scc.range[k];
-        auto route_end = std::begin(scc.component) + scc.range[k + 1];
+        auto route_begin = std::begin(ftse_scc.component) + ftse_scc.range[k];
+        auto route_end = std::begin(ftse_scc.component) + ftse_scc.range[k + 1];
 
-        if (component_size > 1)
+        std::cout << "component_size: " << component_size;
+        if (component_size == 1)
         {
-            if (component_size < BF_MAX_FEASABLE)
-            {
+            std::cout << "inside component size = 1" << std::endl;
+            // if (component_size < BF_MAX_FEASABLE)
+            // {
+            //     if (parameters.source > -1 && parameters.destination > -1) {
+            //         scc_route =
+            //             trip::BruteForceTrip(route_begin, route_end, number_of_tfse_nodes, tfse_table);
+            //     } else {
+            //         scc_route =
+            //             trip::BruteForceTrip(route_begin, route_end, number_of_locations, result_table);
+            //     }
+            // }
+            // else
+            // {
                 if (parameters.source > -1 && parameters.destination > -1) {
-                    scc_route =
-                        trip::BruteForceTrip(route_begin, route_end, number_of_tfse_nodes, tfse_table);
-                } else {
-                    scc_route =
-                        trip::BruteForceTrip(route_begin, route_end, number_of_locations, result_table);
-                }
-            }
-            else
-            {
-                if (parameters.source > -1 && parameters.destination > -1) {
+                    std::cout << "inside modified one";
                     scc_route = trip::FarthestInsertionTrip(
                         route_begin, route_end, number_of_tfse_nodes, tfse_table);
                 } else {
+                    std::cout << "inside non modified one";
                     scc_route = trip::FarthestInsertionTrip(
                         route_begin, route_end, number_of_locations, result_table);
                 }
                 
-            }
+            // }
         }
         else
         {
+            std::cout << "inside component size != 1" << std::endl;
             scc_route = std::vector<NodeID>(route_begin, route_end);
         }
+
+        std::cout << "scc_route: ";
+        for (auto i : scc_route) {
+            std::cout << ' ' << i;
+        }
+        std::cout << '\n';
 
         trips.push_back(std::move(scc_route));
     }

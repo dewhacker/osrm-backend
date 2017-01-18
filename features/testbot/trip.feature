@@ -61,29 +61,38 @@ Feature: Basic trip planning
 
         Given the node map
             """
-            a b
-                c
-            d
-            """
+            a  b
 
-        And the ways
+                  c
+            e  d
+            """
+ 
+         And the ways
             | nodes |
             | ab    |
             | ac    |
             | ad    |
+            | ae    |
             | ba    |
             | bc    |
             | bd    |
+            | be    |
             | ca    |
             | cb    |
             | cd    |
+            | ce    |
             | da    |
             | db    |
             | dc    |
-
-        When I plan a trip I should get
-            |  waypoints | trips  | durations  | distance |
-            |  a,b,c,d   |        |            |          |
+            | de    |
+            | ea    |
+            | eb    |
+            | ec    |
+            | ed    |
+ 
+         When I plan a trip I should get
+            |  waypoints  | trips  | durations          | distance |
+            |  a,b,c,d,e  | becadb | 11.100000000000001 | 110.4    |
 
 
     Scenario: Testbot - Trip planning with multiple scc
