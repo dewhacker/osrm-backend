@@ -117,7 +117,8 @@ SCC_Component SplitUnaccessibleLocations(const std::size_t number_of_locations,
 InternalRouteResult
 TripPlugin::ComputeRoute(const std::shared_ptr<const datafacade::BaseDataFacade> facade,
                          const std::vector<PhantomNode> &snapped_phantoms,
-                         const std::vector<NodeID> &trip) const
+                         const std::vector<NodeID> &trip,
+                         const bool roundtrip) const
 {
     InternalRouteResult min_route;
     // given he final trip, compute total duration and return the route and location permutation
@@ -128,9 +129,15 @@ TripPlugin::ComputeRoute(const std::shared_ptr<const datafacade::BaseDataFacade>
     for (auto it = start; it != end; ++it)
     {
         const auto from_node = *it;
+        
+        // if from_node is the last node and it is a fixed start and end trip, 
+        // break out of this loop and return the route
+        if (!roundtrip && std::next(it) == end) {
+            break;
+        }
         // if from_node is the last node, compute the route from the last to the first location
-        const auto to_node = std::next(it) != end ? *std::next(it) : *start;
-
+        const auto to_node = std::next(it) != end ? *std::next(it) : *start;  
+        
         viapoint = PhantomNodes{snapped_phantoms[from_node], snapped_phantoms[to_node]};
         min_route.segment_end_coordinates.emplace_back(viapoint);
     }
@@ -224,61 +231,98 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
     }
     std::cout << '\n';
 
+    // const std::size_t number_of_original_nodes = result_table.GetNumberOfNodes();
+
+    // tfse_table_.resize(number_of_original_nodes * number_of_original_nodes);
+
+    // if (parameters.source > -1 && parameters.destination > -1) {
+    //     for (std::size_t r_counter = 0, f_counter = 0;
+    //             r_counter < result_table.size(), f_counter < tfse_table_.size();) {
+    //         // swap parameters.destination column with parameters.source column
+    //         if (r_counter % number_of_original_nodes == (long) parameters.destination) {
+    //             tfse_table_[f_counter - 2] = result_table_[r_counter++];
+    //             continue;
+    //         }
+    //         // skip the parameters.source row
+    //         if (r_counter / parameters.destination == number_of_original_nodes) { 
+    //             r_counter = r_counter + number_of_original_nodes;
+    //         }
+    //         tfse_table_[f_counter++] = result_table_[r_counter++];
+    //     }
+    //     tfse_table_[parameters.source * number_of_tfse_nodes + parameters.source] = 0;
+    // }
+
+    // std::cout << "tfse_table_: ";
+    // for (auto i : tfse_table_) {
+    //     std::cout << ' ' << i;
+    // }
+    // std::cout << '\n';
+
     const auto tfse_table = util::DistTableWrapper<EdgeWeight>(tfse_table_, number_of_tfse_nodes);
 
     // get scc components
-    SCC_Component scc = SplitUnaccessibleLocations(number_of_locations, result_table);
+    SCC_Component scc = SplitUnaccessibleLocations(number_of_tfse_nodes, tfse_table);
 
-    SCC_Component ftse_scc = scc;
-
-    if (parameters.source > -1 && parameters.destination > -1) {
-
-        for (std::size_t i = 0; ftse_scc.component.size(); i++) {
-            if (ftse_scc.component[i] == parameters.destination) {
-                ftse_scc.component.erase(ftse_scc.component.begin() + i);
-                // ftse_scc.component.resize();
-
-                for (std::size_t k = 0; k < scc.GetNumberOfComponents(); ++k) {
-                    if (ftse_scc.range[k] > i) {
-                        ftse_scc.range[k] = ftse_scc.range[k] - 1;
-                    }
-                }
-                break;
-            }
-        }
-        std::cout << "scc.component.size(): " << scc.component.size() << std::endl;
-        std::cout << "scc.component: ";
-        for (auto i : scc.component) {
-            std::cout << ' ' << i;
-        }
-        std::cout << '\n';
-        std::cout << "ftse_scc.component.size(): " << ftse_scc.component.size() << std::endl;
-        std::cout << "ftse_scc.GetNumberOfComponents(): " << ftse_scc.GetNumberOfComponents();
-        std::cout << "ftse_scc.component: ";
-        for (auto i : ftse_scc.component) {
-            std::cout << ' ' << i;
-        }
-        std::cout << '\n';
+    std::cout << "scc.component: ";
+    for (auto i : scc.component) {
+        std::cout << ' ' << i;
     }
+    std::cout << '\n';
+
+    std::cout << "scc.range: ";
+    for (auto i : scc.range) {
+        std::cout << ' ' << i;
+    }
+    std::cout << '\n';
+
+    // SCC_Component ftse_scc = scc;
+
+    // if (parameters.source > -1 && parameters.destination > -1) {
+
+    //     for (std::size_t i = 0; ftse_scc.component.size(); i++) {
+    //         if (ftse_scc.component[i] == parameters.destination) {
+    //             ftse_scc.component.erase(ftse_scc.component.begin() + i);
+    //             // ftse_scc.component.resize();
+
+    //             for (std::size_t k = 0; k < scc.GetNumberOfComponents(); ++k) {
+    //                 if (ftse_scc.range[k] > i) {
+    //                     ftse_scc.range[k] = ftse_scc.range[k] - 1;
+    //                 }
+    //             }
+    //             break;
+    //         }
+    //     }
+    //     std::cout << "scc.component.size(): " << scc.component.size() << std::endl;
+    //     std::cout << "scc.component: ";
+    //     for (auto i : scc.component) {
+    //         std::cout << ' ' << i;
+    //     }
+    //     std::cout << '\n';
+    //     std::cout << "ftse_scc.component.size(): " << ftse_scc.component.size() << std::endl;
+    //     std::cout << "ftse_scc.GetNumberOfComponents(): " << ftse_scc.GetNumberOfComponents();
+    //     std::cout << "ftse_scc.component: ";
+    //     for (auto i : ftse_scc.component) {
+    //         std::cout << ' ' << i;
+    //     }
+    //     std::cout << '\n';
+    // }
 
 
     std::vector<std::vector<NodeID>> trips;
-    trips.reserve(ftse_scc.GetNumberOfComponents());
+    trips.reserve(scc.GetNumberOfComponents());
     // run Trip computation for every SCC
-    for (std::size_t k = 0; k < ftse_scc.GetNumberOfComponents(); ++k)
+    for (std::size_t k = 0; k < scc.GetNumberOfComponents(); ++k)
     {
-        const auto component_size = ftse_scc.range[k + 1] - ftse_scc.range[k];
+        const auto component_size = scc.range[k + 1] - scc.range[k];
 
         BOOST_ASSERT_MSG(component_size > 0, "invalid component size");
 
         std::vector<NodeID> scc_route;
-        auto route_begin = std::begin(ftse_scc.component) + ftse_scc.range[k];
-        auto route_end = std::begin(ftse_scc.component) + ftse_scc.range[k + 1];
+        auto route_begin = std::begin(scc.component) + scc.range[k];
+        auto route_end = std::begin(scc.component) + scc.range[k + 1];
 
-        std::cout << "component_size: " << component_size;
-        if (component_size == 1)
+        if (component_size > 1)
         {
-            std::cout << "inside component size = 1" << std::endl;
             // if (component_size < BF_MAX_FEASABLE)
             // {
             //     if (parameters.source > -1 && parameters.destination > -1) {
@@ -291,12 +335,25 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
             // }
             // else
             // {
+            std::cout << "parameters.source: " << parameters.source << std::endl;
+            std::cout << "parameters.destination: " << parameters.destination << std::endl;
                 if (parameters.source > -1 && parameters.destination > -1) {
-                    std::cout << "inside modified one";
                     scc_route = trip::FarthestInsertionTrip(
                         route_begin, route_end, number_of_tfse_nodes, tfse_table);
+
+                    std::cout << "scc_route: ";
+                    for (unsigned i = 0; i < scc_route.size(); i++) {
+                        if (scc_route[i] >= (unsigned) parameters.destination) {
+                            scc_route[i] = scc_route[i] + 1;
+                        }
+                        std::cout << ' ' << scc_route[i];
+                    }
+                    scc_route.resize(number_of_locations);
+                    scc_route[scc_route.size()] = (unsigned) parameters.destination;
+                    std::cout << ' ' << scc_route[scc_route.size()];
+                    std::cout << '\n';
+
                 } else {
-                    std::cout << "inside non modified one";
                     scc_route = trip::FarthestInsertionTrip(
                         route_begin, route_end, number_of_locations, result_table);
                 }
@@ -305,15 +362,14 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
         }
         else
         {
-            std::cout << "inside component size != 1" << std::endl;
             scc_route = std::vector<NodeID>(route_begin, route_end);
         }
 
-        std::cout << "scc_route: ";
-        for (auto i : scc_route) {
-            std::cout << ' ' << i;
-        }
-        std::cout << '\n';
+        // std::cout << "scc_route: ";
+        // for (auto i : scc_route) {
+        //     std::cout << ' ' << i;
+        // }
+        // std::cout << '\n';
 
         trips.push_back(std::move(scc_route));
     }
@@ -325,9 +381,13 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
     // compute all round trip routes
     std::vector<InternalRouteResult> routes;
     routes.reserve(trips.size());
+    bool roundtrip = true;
+    if (parameters.source > -1 && parameters.destination > -1) {
+        roundtrip = false;
+    }
     for (const auto &trip : trips)
     {
-        routes.push_back(ComputeRoute(facade, snapped_phantoms, trip));
+        routes.push_back(ComputeRoute(*facade, snapped_phantoms, trip, roundtrip));
     }
 
     api::TripAPI trip_api{*facade, parameters};

@@ -92,7 +92,7 @@ Feature: Basic trip planning
  
          When I plan a trip I should get
             |  waypoints  | trips  | durations          | distance |
-            |  a,b,c,d,e  | becadb | 11.100000000000001 | 110.4    |
+            |  a,b,c,d,e  | abedc  | 11.100000000000001 | 82       |
 
 
     Scenario: Testbot - Trip planning with multiple scc
