@@ -327,7 +327,7 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
     }
     for (const auto &trip : trips)
     {
-        routes.push_back(ComputeRoute(*facade, snapped_phantoms, trip, roundtrip));
+        routes.push_back(ComputeRoute(facade, snapped_phantoms, trip, roundtrip));
     }
 
     api::TripAPI trip_api{*facade, parameters};
