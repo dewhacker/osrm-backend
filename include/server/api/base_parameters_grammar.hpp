@@ -154,9 +154,8 @@ struct BaseParametersGrammar : boost::spirit::qi::grammar<Iterator, Signature>
                     | bearings_rule(qi::_r1) //
                     | generate_hints_rule(qi::_r1);
 
-        BOOST_SPIRIT_DEBUG_NODES((base_rule)(query_rule)(radiuses_rule)
-                                 (hints_rule)(location_rule)
-                                 (polyline_rule)(base64_char)(polyline_chars)(unlimited_rule));
+        BOOST_SPIRIT_DEBUG_NODES((base_rule)(query_rule)(radiuses_rule)(hints_rule)(location_rule)(
+            polyline_rule)(base64_char)(polyline_chars)(unlimited_rule));
     }
 
   protected:

@@ -52,7 +52,10 @@ struct NearestParameters : public BaseParameters
 
     bool IsValid() const { return BaseParameters::IsValid() && number_of_results >= 1; }
 };
-inline std::ostream& operator<<(std::ostream& out, const NearestParameters&) { return out << "NearestParameters()"; }
+inline std::ostream &operator<<(std::ostream &out, const NearestParameters &)
+{
+    return out << "NearestParameters()";
+}
 }
 }
 }

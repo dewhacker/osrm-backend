@@ -34,8 +34,6 @@ module.exports = function () {
                         json = JSON.parse(res.body);
                     }
 
-                    console.log(JSON.stringify(json));
-
                     if (headers.has('status')) {
                         got.status = json.status.toString();
                     }
@@ -70,6 +68,7 @@ module.exports = function () {
 
                     var subTrips;
                     var trip_durations;
+                    var trip_distance;
                     if (res.statusCode === 200) {
                         if (headers.has('trips')) {
                             subTrips = json.trips.filter(t => !!t).map(t => t.legs).map(tl => Array.prototype.concat.apply([], tl.map((sl, i) => {

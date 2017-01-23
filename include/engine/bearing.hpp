@@ -42,7 +42,7 @@ struct Bearing
 
     bool IsValid() const { return bearing >= 0 && bearing <= 360 && range >= 0 && range <= 180; }
 };
-inline std::ostream& operator<<(std::ostream& out, const Bearing&) { return out << "Bearing()"; }
+inline std::ostream &operator<<(std::ostream &out, const Bearing &) { return out << "Bearing()"; }
 
 inline bool operator==(const Bearing lhs, const Bearing rhs)
 {

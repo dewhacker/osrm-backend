@@ -76,7 +76,10 @@ struct MatchParameters : public RouteParameters
     }
 };
 
-inline std::ostream& operator<<(std::ostream& out, const MatchParameters&) { return out << "MatchParameters()"; }
+inline std::ostream &operator<<(std::ostream &out, const MatchParameters &)
+{
+    return out << "MatchParameters()";
+}
 }
 }
 }
