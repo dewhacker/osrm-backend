@@ -31,7 +31,14 @@ EdgeWeight ReturnDistance(const util::DistTableWrapper<EdgeWeight> &dist_table,
     std::size_t i = 0;
     while (i < location_order.size() && (route_dist < min_route_dist))
     {
-        route_dist += dist_table(location_order[i], location_order[(i + 1) % component_size]);
+        // Check for overflow
+        std::int64_t new_distance = route_dist + dist_table(location_order[i], location_order[(i + 1) % component_size]);
+        if (new_distance < route_dist || new_distance < dist_table(location_order[i], location_order[(i + 1) % component_size])) { // overflow
+          new_distance = std::numeric_limits<EdgeWeight>::max();
+        }
+        route_dist = (std::int32_t) new_distance;
+
+        // route_dist = route_dist + dist_table(location_order[i], location_order[(i + 1) % component_size]);
         BOOST_ASSERT_MSG(dist_table(location_order[i], location_order[(i + 1) % component_size]) !=
                              INVALID_EDGE_WEIGHT,
                          "invalid route found");

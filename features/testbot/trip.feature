@@ -91,9 +91,8 @@ Feature: Basic trip planning
             | ed    |
  
          When I plan a trip I should get
-            |  waypoints  | trips  | durations          | distance |
-            |  a,b,c,d,e  | abedc  | 11.100000000000001 | 82       |
-
+            |  waypoints  | trips  | durations         | distance |
+            |  a,b,c,d,e  | abedc  | 8.200000000000001 | 81.6     |
 
     Scenario: Testbot - Trip planning with multiple scc
         Given the node map
