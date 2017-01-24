@@ -258,7 +258,12 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
         util::DistTableWrapper<EdgeWeight>(tfse_table_, result_table.GetNumberOfNodes());
 
     // get scc components
-    SCC_Component scc = SplitUnaccessibleLocations(tfse_table.GetNumberOfNodes(), tfse_table);
+    SCC_Component scc = SplitUnaccessibleLocations(result_table.GetNumberOfNodes(), result_table);
+
+    if (parameters.source > -1 && parameters.destination > -1)
+    {
+        scc = SplitUnaccessibleLocations(tfse_table.GetNumberOfNodes(), tfse_table);
+    }
 
     std::cout << "scc.component: ";
     for (auto i : scc.component)
