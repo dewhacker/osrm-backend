@@ -122,7 +122,7 @@ TripPlugin::ComputeRoute(const std::shared_ptr<const datafacade::BaseDataFacade>
                          const bool roundtrip) const
 {
     InternalRouteResult min_route;
-    // given he final trip, compute total duration and return the route and location permutation
+    // given the final trip, compute total duration and return the route and location permutation
     PhantomNodes viapoint;
     const auto start = std::begin(trip);
     const auto end = std::end(trip);
@@ -134,16 +134,24 @@ TripPlugin::ComputeRoute(const std::shared_ptr<const datafacade::BaseDataFacade>
         // if from_node is the last node and it is a fixed start and end trip,
         // break out of this loop and return the route
         if (!roundtrip && std::next(it) == end)
-        {
             break;
-        }
+
         // if from_node is the last node, compute the route from the last to the first location
         const auto to_node = std::next(it) != end ? *std::next(it) : *start;
 
         viapoint = PhantomNodes{snapped_phantoms[from_node], snapped_phantoms[to_node]};
         min_route.segment_end_coordinates.emplace_back(viapoint);
     }
-    BOOST_ASSERT(min_route.segment_end_coordinates.size() == trip.size());
+
+    if (roundtrip)
+    {
+        BOOST_ASSERT(min_route.segment_end_coordinates.size() == trip.size());
+    }
+    else
+    {
+        // trip comes out to be something like 0 1 4 3 2, so the sizes don't
+        BOOST_ASSERT(min_route.segment_end_coordinates.size() == trip.size() - 1);
+    }
 
     shortest_path(facade, min_route.segment_end_coordinates, {false}, min_route);
 
@@ -206,6 +214,7 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
     }
     std::cout << '\n';
 
+    // Original Table
     //   a  b  c  d  e
     // a 0  15 36 34 30
     // b 15 0  25 30 34
@@ -213,6 +222,7 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
     // d 34 30 18 0  15
     // e 30 34 32 15 0
 
+    // The following code manipulates the table and produces the following table for FTSE
     //   a        b         c        d         e
     // a 0 0      1 15      2 10000  3 34      4 30
     // b 5 10000  6 0       7 25     8 30      9 34
@@ -238,6 +248,7 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
                 tfse_table_[f_counter] = std::numeric_limits<EdgeWeight>::max();
             }
         }
+
         tfse_table_[parameters.source * result_table.GetNumberOfNodes() + parameters.source] = 0;
         tfse_table_[parameters.destination * result_table.GetNumberOfNodes() + parameters.source] =
             0;
@@ -246,13 +257,6 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
         tfse_table_[parameters.source * result_table.GetNumberOfNodes() + parameters.destination] =
             std::numeric_limits<EdgeWeight>::max();
     }
-
-    std::cout << "tfse_table_: ";
-    for (auto i : tfse_table_)
-    {
-        std::cout << ' ' << i;
-    }
-    std::cout << '\n';
 
     const auto tfse_table =
         util::DistTableWrapper<EdgeWeight>(tfse_table_, result_table.GetNumberOfNodes());
@@ -264,20 +268,6 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
     {
         scc = SplitUnaccessibleLocations(tfse_table.GetNumberOfNodes(), tfse_table);
     }
-
-    std::cout << "scc.component: ";
-    for (auto i : scc.component)
-    {
-        std::cout << ' ' << i;
-    }
-    std::cout << '\n';
-
-    std::cout << "scc.range: ";
-    for (auto i : scc.range)
-    {
-        std::cout << ' ' << i;
-    }
-    std::cout << '\n';
 
     std::vector<std::vector<NodeID>> trips;
     trips.reserve(scc.GetNumberOfComponents());
@@ -325,13 +315,6 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
         {
             scc_route = std::vector<NodeID>(route_begin, route_end);
         }
-
-        std::cout << "scc_route: ";
-        for (auto i : scc_route)
-        {
-            std::cout << ' ' << i;
-        }
-        std::cout << '\n';
 
         trips.push_back(std::move(scc_route));
     }

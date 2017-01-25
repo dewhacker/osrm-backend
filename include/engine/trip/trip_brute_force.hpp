@@ -31,18 +31,18 @@ EdgeWeight ReturnDistance(const util::DistTableWrapper<EdgeWeight> &dist_table,
     std::size_t i = 0;
     while (i < location_order.size() && (route_dist < min_route_dist))
     {
-        // Check for overflow
-        std::int64_t new_distance =
-            route_dist + dist_table(location_order[i], location_order[(i + 1) % component_size]);
-        if (new_distance < route_dist ||
-            new_distance < dist_table(location_order[i], location_order[(i + 1) % component_size]))
-        { // overflow
-            new_distance = std::numeric_limits<EdgeWeight>::max();
+        // Check for path that touches INVALID_EDGE_WEIGHT (which is MAX_32INT)
+        // Fixed start and end trip needs to escape this path if a max edge weight is found on the
+        // dist table
+        if (dist_table(location_order[i], location_order[(i + 1) % component_size]) ==
+            INVALID_EDGE_WEIGHT)
+            return INVALID_EDGE_WEIGHT;
+        else
+        {
+            route_dist += dist_table(location_order[i], location_order[(i + 1) % component_size]);
         }
-        route_dist = (std::int32_t)new_distance;
 
-        // route_dist = route_dist + dist_table(location_order[i], location_order[(i + 1) %
-        // component_size]);
+        // This boost assert should not be reached if TFSE table
         BOOST_ASSERT_MSG(dist_table(location_order[i], location_order[(i + 1) % component_size]) !=
                              INVALID_EDGE_WEIGHT,
                          "invalid route found");
@@ -64,6 +64,16 @@ std::vector<NodeID> BruteForceTrip(const NodeIDIterator start,
     const auto component_size = std::distance(start, end);
 
     std::vector<NodeID> perm(start, end);
+
+    std::cout << "std::max_element(perm): " << *(std::max_element(std::begin(perm), std::end(perm)))
+              << std::endl;
+    std::cout << "perm: ";
+    for (auto i : perm)
+    {
+        std::cout << ' ' << i;
+    }
+    std::cout << '\n';
+
     std::vector<NodeID> route = perm;
 
     EdgeWeight min_route_dist = INVALID_EDGE_WEIGHT;
