@@ -204,15 +204,8 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
     BOOST_ASSERT_MSG(result_table.size() == number_of_locations * number_of_locations,
                      "Distance Table has wrong size");
 
-    std::vector<EdgeWeight> tfse_table_ = result_table.GetTable();
-    std::vector<EdgeWeight> result_table_ = result_table.GetTable();
-
-    std::cout << "result_table_: ";
-    for (auto i : result_table_)
-    {
-        std::cout << ' ' << i;
-    }
-    std::cout << '\n';
+    // The following code manipulates the table and produces the new table for
+    // Trip with Fixed Start and End (TFSE)
 
     // Original Table
     //   a  b  c  d  e
@@ -222,13 +215,15 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
     // d 34 30 18 0  15
     // e 30 34 32 15 0
 
-    // The following code manipulates the table and produces the following table for FTSE
+    // New Table
     //   a        b         c        d         e
     // a 0 0      1 15      2 10000  3 34      4 30
     // b 5 10000  6 0       7 25     8 30      9 34
     // c 10 0     11 10000  12 0     13 10000  14 10000
     // d 15 10000 16 30     17 18    18 0      19 15
     // e 20 10000 21 34     22 32    23 15     24 0
+
+    std::vector<EdgeWeight> tfse_table_ = result_table.GetTable();
 
     if (parameters.source > -1 && parameters.destination > -1)
     {
@@ -267,6 +262,31 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
     if (parameters.source > -1 && parameters.destination > -1)
     {
         scc = SplitUnaccessibleLocations(tfse_table.GetNumberOfNodes(), tfse_table);
+
+        // if source and destination are in different sccs then return error
+        if (scc.GetNumberOfComponents() > 1)
+        {
+            std::size_t source_component_id = 0, destination_component_id = 1;
+
+            for (std::size_t k = 0; k < scc.GetNumberOfComponents(); ++k)
+            {
+                // const auto component_size = scc.range[k + 1] - scc.range[k];
+                for (auto i : scc.component)
+                {
+                    if (parameters.source == i)
+                        source_component_id = k;
+                    if (parameters.destination == i)
+                        destination_component_id = k;
+                }
+            }
+
+            if (source_component_id != destination_component_id)
+            {
+                return Error("DifferentComponents",
+                             "Start and end nodes are not in the same connected component",
+                             json_result);
+            }
+        }
     }
 
     std::vector<std::vector<NodeID>> trips;

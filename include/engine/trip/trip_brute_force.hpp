@@ -36,7 +36,9 @@ EdgeWeight ReturnDistance(const util::DistTableWrapper<EdgeWeight> &dist_table,
         // dist table
         if (dist_table(location_order[i], location_order[(i + 1) % component_size]) ==
             INVALID_EDGE_WEIGHT)
+        {
             return INVALID_EDGE_WEIGHT;
+        }
         else
         {
             route_dist += dist_table(location_order[i], location_order[(i + 1) % component_size]);
@@ -64,16 +66,6 @@ std::vector<NodeID> BruteForceTrip(const NodeIDIterator start,
     const auto component_size = std::distance(start, end);
 
     std::vector<NodeID> perm(start, end);
-
-    std::cout << "std::max_element(perm): " << *(std::max_element(std::begin(perm), std::end(perm)))
-              << std::endl;
-    std::cout << "perm: ";
-    for (auto i : perm)
-    {
-        std::cout << ' ' << i;
-    }
-    std::cout << '\n';
-
     std::vector<NodeID> route = perm;
 
     EdgeWeight min_route_dist = INVALID_EDGE_WEIGHT;
