@@ -261,7 +261,23 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
 
     if (parameters.source > -1 && parameters.destination > -1)
     {
-        scc = SplitUnaccessibleLocations(tfse_table.GetNumberOfNodes(), tfse_table);
+
+        std::cout << "I get before splitting into strongly connected components" << std::endl;
+
+        SCC_Component scc = SplitUnaccessibleLocations(tfse_table.GetNumberOfNodes(), tfse_table);
+
+        std::cout << "scc.component" << std::endl;
+        for (auto i : scc.component) {
+            std::cout << " " << i;
+        }
+        std::cout << std::endl;
+
+        std::cout << "scc.range" << std::endl;
+        for (auto i : scc.range) {
+            std::cout << " " << i;
+        }
+        std::cout << std::endl;
+
 
         // if source and destination are in different sccs then return error
         if (scc.GetNumberOfComponents() > 1)

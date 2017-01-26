@@ -94,7 +94,38 @@ Feature: Basic trip planning
             |  waypoints  | trips  | durations         | distance |
             |  a,b,c,d,e  | abedc  | 8.200000000000001 | 81.6     |
 
-    Scenario: Testbot - Trip planning with multiple scc
+    Scenario: Testbot - Trip planning with multiple scc tfse
+        Given the query options
+            | source        | 0       |
+            | destination   | 4       |
+
+        Given the node map
+            """
+            a  b
+            c  d
+
+            e  f
+            """
+ 
+         And the ways
+            | nodes |
+            | ab    |
+            | ac    |
+            | ba    |
+            | bd    |
+            | ca    |
+            | cd    |
+            | db    |
+            | dc    |
+            | ef    |
+            | fe    |
+ 
+         When I plan a trip I should get
+            |  waypoints    | status  | message  |
+            |  a,b,c,d,e,f  |         |          |
+
+
+    Scenario: Testbot - Trip planning with multiple scc roundtrip
         Given the node map
             """
             a b c d

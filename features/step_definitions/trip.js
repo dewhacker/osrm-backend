@@ -34,6 +34,8 @@ module.exports = function () {
                         json = JSON.parse(res.body);
                     }
 
+                    console.log(JSON.stringify(json));
+
                     if (headers.has('status')) {
                         got.status = json.status.toString();
                     }
