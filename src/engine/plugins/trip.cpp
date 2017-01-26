@@ -232,7 +232,7 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
             // parameters.source column
             if (f_counter % result_table.GetNumberOfNodes() == (unsigned long)parameters.source)
             {
-                tfse_table_[f_counter] = std::numeric_limits<EdgeWeight>::max();
+                tfse_table_[f_counter] = INVALID_EDGE_WEIGHT;
             }
 
             // parameters.destination row
@@ -240,7 +240,7 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
                 f_counter < result_table.GetNumberOfNodes() * parameters.destination +
                                 result_table.GetNumberOfNodes())
             {
-                tfse_table_[f_counter] = std::numeric_limits<EdgeWeight>::max();
+                tfse_table_[f_counter] = INVALID_EDGE_WEIGHT;
             }
         }
 
@@ -250,7 +250,7 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
         tfse_table_[parameters.destination * result_table.GetNumberOfNodes() +
                     parameters.destination] = 0;
         tfse_table_[parameters.source * result_table.GetNumberOfNodes() + parameters.destination] =
-            std::numeric_limits<EdgeWeight>::max();
+            INVALID_EDGE_WEIGHT;
     }
 
     const auto tfse_table =
@@ -259,13 +259,8 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
     // get scc components
     SCC_Component scc = SplitUnaccessibleLocations(result_table.GetNumberOfNodes(), result_table);
 
-    if (parameters.source > -1 && parameters.destination > -1)
+    if (parameters.source > -1 && parameters.destination > -1) //check if fized start and end
     {
-
-        std::cout << "I get before splitting into strongly connected components" << std::endl;
-
-        SCC_Component scc = SplitUnaccessibleLocations(tfse_table.GetNumberOfNodes(), tfse_table);
-
         std::cout << "scc.component" << std::endl;
         for (auto i : scc.component) {
             std::cout << " " << i;
@@ -282,24 +277,31 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
         // if source and destination are in different sccs then return error
         if (scc.GetNumberOfComponents() > 1)
         {
-            std::size_t source_component_id = 0, destination_component_id = 1;
+            std::size_t source_component_id = std::numeric_limits<std::size_t>::max();
+            std::size_t destination_component_id = std::numeric_limits<std::size_t>::max();
 
             for (std::size_t k = 0; k < scc.GetNumberOfComponents(); ++k)
             {
-                // const auto component_size = scc.range[k + 1] - scc.range[k];
-                for (auto i : scc.component)
-                {
-                    if (parameters.source == i)
-                        source_component_id = k;
-                    if (parameters.destination == i)
-                        destination_component_id = k;
-                }
+    //          NodeID 0, 1, 2, 4, 5 are in component 0
+    //          NodeID 3, 6, 7, 8    are in component 1
+    //          => scc.component = [0, 1, 2, 4, 5, 3, 6, 7, 8]
+    //          => scc.range = [0, 5]
+
+                auto route_begin = std::begin(scc.component) + scc.range[k];
+                auto route_end = std::begin(scc.component) + scc.range[k + 1];
+
+                std::for_each(route_begin, route_end, [&](const NodeID &id) {
+                  if (parameters.source == id) source_component_id = k;
+                  if (parameters.destination == id) destination_component_id = k;
+                });
             }
 
-            if (source_component_id != destination_component_id)
+            if ( destination_component_id == std::numeric_limits<std::size_t>::max() ||
+                source_component_id == std::numeric_limits<std::size_t>::max() ||
+                source_component_id != destination_component_id)
             {
-                return Error("DifferentComponents",
-                             "Start and end nodes are not in the same connected component",
+                return Error("NoTrips",
+                             "There's no way to get from source to destination",
                              json_result);
             }
         }

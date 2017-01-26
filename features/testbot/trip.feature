@@ -96,8 +96,8 @@ Feature: Basic trip planning
 
     Scenario: Testbot - Trip planning with multiple scc tfse
         Given the query options
-            | source        | 0       |
-            | destination   | 4       |
+            | source        | 4       |
+            | destination   | 0       |
 
         Given the node map
             """
@@ -111,18 +111,12 @@ Feature: Basic trip planning
             | nodes |
             | ab    |
             | ac    |
-            | ba    |
             | bd    |
-            | ca    |
-            | cd    |
-            | db    |
-            | dc    |
             | ef    |
-            | fe    |
  
          When I plan a trip I should get
             |  waypoints    | status  | message  |
-            |  a,b,c,d,e,f  |         |          |
+            |  f,b,c,d,a,e  |         |          |
 
 
     Scenario: Testbot - Trip planning with multiple scc roundtrip
