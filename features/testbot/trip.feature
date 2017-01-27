@@ -38,7 +38,6 @@ Feature: Basic trip planning
             | nodes |
             | ab    |
             | bc    |
-            | cb    |
             | de    |
             | ef    |
             | fg    |
@@ -54,7 +53,7 @@ Feature: Basic trip planning
             | a,b,c,d,e,f,g,h,i,j,k,l | cbalkjihgfedc |
 
 
-    Scenario: Testbot - Trip planning with fixed start and end
+    Scenario: Testbot - Trip planning with less than ten node tfse
         Given the query options
             | source        | 0       |
             | destination   | 2       |
@@ -84,29 +83,24 @@ Feature: Basic trip planning
             |  waypoints  | trips  | durations         | distance |
             |  a,b,c,d,e  | abedc  | 8.200000000000001 | 81.6     |
 
-    Scenario: Testbot - Trip planning with multiple scc tfse
-        Given the query options
-            | source        | 4       |
-            | destination   | 0       |
 
+    # Test single node in each component #1850
+    Scenario: Testbot - Trip planning with less than 10 nodes
         Given the node map
             """
-            a  b
-            c  d
+            a 1 b
 
-            e  f
+            c 2 d
             """
- 
-         And the ways
+
+        And the ways
             | nodes |
             | ab    |
-            | ac    |
-            | bd    |
-            | ef    |
- 
-         When I plan a trip I should get
-            |  waypoints    | status   | message                                          |
-            |  f,b,c,d,a,e  | NoTrips  | There's no way to get from source to destination |
+            | cd    |
+
+        When I plan a trip I should get
+            | waypoints | trips |
+            | 1,2       |       |
 
 
     Scenario: Testbot - Trip planning with multiple scc roundtrip
@@ -141,29 +135,32 @@ Feature: Basic trip planning
             | pq    |
             | qm    |
 
-
         When I plan a trip I should get
             | waypoints                       | trips               |
             | a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p | defghijklabcd,mnopm |
 
 
-    # Test single node in each component #1850
-    Scenario: Testbot - Trip planning with less than 10 nodes test
+    Scenario: Testbot - Trip planning with multiple scc tfse
+        Given the query options
+            | source        | 0       |
+            | destination   | 3       |
+
         Given the node map
             """
-            a 1 b
+            a  b
 
-            c 2 d
+            d  c
             """
 
-        And the ways
+         And the ways
             | nodes |
             | ab    |
-            | cd    |
+            | dc    |
 
-        When I plan a trip I should get
-            | waypoints | trips |
-            | 1,2       |       |
+         When I plan a trip I should get
+            |  waypoints    | status   | message                                          |
+            |  a,b,c,d      | NoTrips  | There's no way to get from source to destination |
+
 
     Scenario: Testbot - Repeated Coordinate
         Given the node map

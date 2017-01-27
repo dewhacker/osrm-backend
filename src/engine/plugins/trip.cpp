@@ -340,7 +340,6 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
 
     if (trips.empty())
     {
-        std::cout << "why do I not end up here?" << std::endl;
         return Error("NoTrips", "Cannot find trips", json_result);
     }
 
