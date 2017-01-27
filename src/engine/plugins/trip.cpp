@@ -258,7 +258,7 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
     // get scc components
     SCC_Component scc = SplitUnaccessibleLocations(result_table.GetNumberOfNodes(), result_table);
 
-    if (parameters.source > -1 && parameters.destination > -1) //check if fixed start and end
+    if (parameters.source > -1 && parameters.destination > -1) // check if fixed start and end
     {
         // if source and destination are in different sccs then return error
         if (scc.GetNumberOfComponents() > 1)
@@ -272,18 +272,19 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
                 auto route_end = std::begin(scc.component) + scc.range[k + 1];
 
                 std::for_each(route_begin, route_end, [&](const NodeID &id) {
-                  if (parameters.source == id) source_component_id = k;
-                  if (parameters.destination == id) destination_component_id = k;
+                    if ((NodeID)parameters.source == id)
+                        source_component_id = k;
+                    if ((NodeID)parameters.destination == id)
+                        destination_component_id = k;
                 });
             }
 
-            if ( destination_component_id == std::numeric_limits<std::size_t>::max() ||
+            if (destination_component_id == std::numeric_limits<std::size_t>::max() ||
                 source_component_id == std::numeric_limits<std::size_t>::max() ||
                 source_component_id != destination_component_id)
             {
-                return Error("NoTrips",
-                             "There's no way to get from source to destination",
-                             json_result);
+                return Error(
+                    "NoTrips", "There's no way to get from source to destination", json_result);
             }
         }
     }

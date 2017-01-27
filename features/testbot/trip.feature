@@ -84,6 +84,34 @@ Feature: Basic trip planning
             |  a,b,c,d,e  | abedc  | 8.200000000000001 | 81.6     |
 
 
+    Scenario: Testbot - Trip planning with more than 10 nodes tfse
+        Given the query options
+            | source        | 0       |
+            | destination   | 10      |
+
+        Given the node map
+            """
+            a b c d e f g h i j k
+            """
+
+        And the ways
+            | nodes |
+            | ab    |
+            | bc    |
+            | cd    |
+            | de    |
+            | ef    |
+            | fg    |
+            | gh    |
+            | hi    |
+            | ij    |
+            | jk    |
+
+        When I plan a trip I should get
+            |  waypoints              | trips       | durations  | distance  |
+            |  a,b,c,d,e,f,g,h,i,j,k  | abcdefghijk | 10         | 99.9      |
+
+
     # Test single node in each component #1850
     Scenario: Testbot - Trip planning with less than 10 nodes
         Given the node map
@@ -147,9 +175,9 @@ Feature: Basic trip planning
 
         Given the node map
             """
-            a  b
+            a b
 
-            d  c
+            d c
             """
 
          And the ways
