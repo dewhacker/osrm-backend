@@ -73,22 +73,12 @@ Feature: Basic trip planning
             | ac    |
             | ad    |
             | ae    |
-            | ba    |
             | bc    |
             | bd    |
             | be    |
-            | ca    |
-            | cb    |
             | cd    |
             | ce    |
-            | da    |
-            | db    |
-            | dc    |
             | de    |
-            | ea    |
-            | eb    |
-            | ec    |
-            | ed    |
  
          When I plan a trip I should get
             |  waypoints  | trips  | durations         | distance |
@@ -115,8 +105,8 @@ Feature: Basic trip planning
             | ef    |
  
          When I plan a trip I should get
-            |  waypoints    | status  | message  |
-            |  f,b,c,d,a,e  |         |          |
+            |  waypoints    | status   | message                                          |
+            |  f,b,c,d,a,e  | NoTrips  | There's no way to get from source to destination |
 
 
     Scenario: Testbot - Trip planning with multiple scc roundtrip
@@ -158,7 +148,7 @@ Feature: Basic trip planning
 
 
     # Test single node in each component #1850
-    Scenario: Testbot - Trip planning with less than 10 nodes
+    Scenario: Testbot - Trip planning with less than 10 nodes test
         Given the node map
             """
             a 1 b

@@ -70,7 +70,6 @@ struct SCC_Component
 SCC_Component SplitUnaccessibleLocations(const std::size_t number_of_locations,
                                          const util::DistTableWrapper<EdgeWeight> &result_table)
 {
-
     if (std::find(std::begin(result_table), std::end(result_table), INVALID_EDGE_WEIGHT) ==
         std::end(result_table))
     {
@@ -259,21 +258,8 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
     // get scc components
     SCC_Component scc = SplitUnaccessibleLocations(result_table.GetNumberOfNodes(), result_table);
 
-    if (parameters.source > -1 && parameters.destination > -1) //check if fized start and end
+    if (parameters.source > -1 && parameters.destination > -1) //check if fixed start and end
     {
-        std::cout << "scc.component" << std::endl;
-        for (auto i : scc.component) {
-            std::cout << " " << i;
-        }
-        std::cout << std::endl;
-
-        std::cout << "scc.range" << std::endl;
-        for (auto i : scc.range) {
-            std::cout << " " << i;
-        }
-        std::cout << std::endl;
-
-
         // if source and destination are in different sccs then return error
         if (scc.GetNumberOfComponents() > 1)
         {
@@ -282,11 +268,6 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
 
             for (std::size_t k = 0; k < scc.GetNumberOfComponents(); ++k)
             {
-    //          NodeID 0, 1, 2, 4, 5 are in component 0
-    //          NodeID 3, 6, 7, 8    are in component 1
-    //          => scc.component = [0, 1, 2, 4, 5, 3, 6, 7, 8]
-    //          => scc.range = [0, 5]
-
                 auto route_begin = std::begin(scc.component) + scc.range[k];
                 auto route_end = std::begin(scc.component) + scc.range[k + 1];
 
@@ -356,8 +337,10 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
 
         trips.push_back(std::move(scc_route));
     }
+
     if (trips.empty())
     {
+        std::cout << "why do I not end up here?" << std::endl;
         return Error("NoTrips", "Cannot find trips", json_result);
     }
 
