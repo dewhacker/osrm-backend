@@ -9,7 +9,7 @@ namespace routing_algorithms
 
 // allows a uturn at the target_phantom
 // searches source forward/reverse -> target forward/reverse
-void ShortestPathRouting::SearchWithUTurn(
+void ShortestPathRouting<algorithm::CH>::SearchWithUTurn(
     const FacadeT &facade,
     QueryHeap &forward_heap,
     QueryHeap &reverse_heap,
@@ -100,7 +100,7 @@ void ShortestPathRouting::SearchWithUTurn(
 // searches shortest path between:
 // source forward/reverse -> target forward
 // source forward/reverse -> target reverse
-void ShortestPathRouting::Search(const FacadeT &facade,
+void ShortestPathRouting<algorithm::CH>::Search(const FacadeT &facade,
                                  QueryHeap &forward_heap,
                                  QueryHeap &reverse_heap,
                                  QueryHeap &forward_core_heap,
@@ -223,7 +223,7 @@ void ShortestPathRouting::Search(const FacadeT &facade,
     }
 }
 
-void ShortestPathRouting::UnpackLegs(const FacadeT &facade,
+void ShortestPathRouting<algorithm::CH>::UnpackLegs(const FacadeT &facade,
                                      const std::vector<PhantomNodes> &phantom_nodes_vector,
                                      const std::vector<NodeID> &total_packed_path,
                                      const std::vector<std::size_t> &packed_leg_begin,
@@ -253,7 +253,7 @@ void ShortestPathRouting::UnpackLegs(const FacadeT &facade,
     }
 }
 
-void ShortestPathRouting::operator()(const FacadeT &facade,
+void ShortestPathRouting<algorithm::CH>::operator()(const FacadeT &facade,
                                      const std::vector<PhantomNodes> &phantom_nodes_vector,
                                      const boost::optional<bool> continue_straight_at_waypoint,
                                      InternalRouteResult &raw_route_data) const

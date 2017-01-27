@@ -79,7 +79,7 @@ template <typename AlgorithmT> class TripPlugin final : public BasePlugin<Algori
     mutable routing_algorithms::ManyToManyRouting<AlgorithmT> duration_table;
     const int max_locations_trip;
 
-    InternalRouteResult ComputeRoute(const const datafacade::ContiguousInternalMemoryDataFacade<AlgorithmT> &facade,
+    InternalRouteResult ComputeRoute(const datafacade::ContiguousInternalMemoryDataFacade<AlgorithmT> &facade,
                                      const std::vector<PhantomNode> &phantom_node_list,
                                      const std::vector<NodeID> &trip) const;
 

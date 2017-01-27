@@ -7,7 +7,7 @@ namespace engine
 namespace routing_algorithms
 {
 
-std::vector<EdgeWeight> ManyToManyRouting::
+std::vector<EdgeWeight> ManyToManyRouting<algorithm::CH>::
 operator()(const FacadeT &facade,
            const std::vector<PhantomNode> &phantom_nodes,
            const std::vector<std::size_t> &source_indices,
@@ -119,7 +119,7 @@ operator()(const FacadeT &facade,
     return result_table;
 }
 
-void ManyToManyRouting::ForwardRoutingStep(
+void ManyToManyRouting<algorithm::CH>::ForwardRoutingStep(
     const FacadeT &facade,
     const unsigned row_idx,
     const unsigned number_of_targets,
@@ -166,8 +166,8 @@ void ManyToManyRouting::ForwardRoutingStep(
     RelaxOutgoingEdges<true>(facade, node, source_weight, query_heap);
 }
 
-void ManyToManyRouting::BackwardRoutingStep(
-    const std::shared_ptr<const datafacade::BaseDataFacade> facade,
+void ManyToManyRouting<algorithm::CH>::BackwardRoutingStep(
+    const FacadeT &facade,
     const unsigned column_idx,
     QueryHeap &query_heap,
     SearchSpaceWithBuckets &search_space_with_buckets) const

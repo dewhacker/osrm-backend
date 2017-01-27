@@ -7,7 +7,7 @@ namespace engine
 namespace routing_algorithms
 {
 
-void AlternativeRouting::operator()(const FacadeT &facade,
+void AlternativeRouting<algorithm::CH>::operator()(const FacadeT &facade,
                                     const PhantomNodes &phantom_node_pair,
                                     InternalRouteResult &raw_route_data)
 {
@@ -320,7 +320,7 @@ void AlternativeRouting::operator()(const FacadeT &facade,
     }
 }
 
-void AlternativeRouting::RetrievePackedAlternatePath(const QueryHeap &forward_heap1,
+void AlternativeRouting<algorithm::CH>::RetrievePackedAlternatePath(const QueryHeap &forward_heap1,
                                                      const QueryHeap &reverse_heap1,
                                                      const QueryHeap &forward_heap2,
                                                      const QueryHeap &reverse_heap2,
@@ -343,7 +343,7 @@ void AlternativeRouting::RetrievePackedAlternatePath(const QueryHeap &forward_he
 // compute and unpack <s,..,v> and <v,..,t> by exploring search spaces
 // from v and intersecting against queues. only half-searches have to be
 // done at this stage
-void AlternativeRouting::ComputeLengthAndSharingOfViaPath(
+void AlternativeRouting<algorithm::CH>::ComputeLengthAndSharingOfViaPath(
     const FacadeT &facade,
     const NodeID via_node,
     int *real_length_of_via_path,
@@ -513,7 +513,7 @@ void AlternativeRouting::ComputeLengthAndSharingOfViaPath(
 }
 
 // conduct T-Test
-bool AlternativeRouting::ViaNodeCandidatePassesTTest(
+bool AlternativeRouting<algorithm::CH>::ViaNodeCandidatePassesTTest(
     const FacadeT &facade,
     QueryHeap &existing_forward_heap,
     QueryHeap &existing_reverse_heap,

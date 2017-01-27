@@ -43,8 +43,8 @@ template <typename AlgorithmT> class MapMatching;
 // implements a hidden markov model map matching algorithm
 template <> class MapMatching<algorithm::CH> final : public BasicRouting<algorithm::CH>
 {
+    using super = BasicRouting<algorithm::CH>;
     using FacadeT = datafacade::ContiguousInternalMemoryDataFacade<algorithm::CH>;
-    using SuperT = BasicRouting<algorithm::CH>;
     using QueryHeap = SearchEngineData::QueryHeap;
     SearchEngineData &engine_working_data;
     map_matching::EmissionLogProbability default_emission_log_probability;

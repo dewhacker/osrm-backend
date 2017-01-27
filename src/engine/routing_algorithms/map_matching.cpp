@@ -7,7 +7,7 @@ namespace engine
 namespace routing_algorithms
 {
 
-unsigned MapMatching::GetMedianSampleTime(const std::vector<unsigned> &timestamps) const
+unsigned MapMatching<algorithm::CH>::GetMedianSampleTime(const std::vector<unsigned> &timestamps) const
 {
     BOOST_ASSERT(timestamps.size() > 1);
 
@@ -22,7 +22,7 @@ unsigned MapMatching::GetMedianSampleTime(const std::vector<unsigned> &timestamp
     return *median;
 }
 
-SubMatchingList MapMatching::
+SubMatchingList MapMatching<algorithm::CH>::
 operator()(const FacadeT &facade,
            const CandidateLists &candidates_list,
            const std::vector<util::Coordinate> &trace_coordinates,

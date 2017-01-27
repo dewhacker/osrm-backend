@@ -25,8 +25,8 @@ template <typename AlgorithmT> class DirectShortestPathRouting;
 template <>
 class DirectShortestPathRouting<algorithm::CH> final : public BasicRouting<algorithm::CH>
 {
+    using super = BasicRouting<algorithm::CH>;
     using FacadeT = datafacade::ContiguousInternalMemoryDataFacade<algorithm::CH>;
-    using SuperT = BasicRouting<algorithm::CH>;
     using QueryHeap = SearchEngineData::QueryHeap;
     SearchEngineData &engine_working_data;
 

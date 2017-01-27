@@ -33,8 +33,8 @@ template <typename AlgorithmT> class AlternativeRouting;
 
 template <> class AlternativeRouting<algorithm::CH> final : private BasicRouting<algorithm::CH>
 {
+    using super = BasicRouting<algorithm::CH>;
     using FacadeT = datafacade::ContiguousInternalMemoryDataFacade<algorithm::CH>;
-    using SuperT = BasicRouting<algorithm::CH>;
     using QueryHeap = SearchEngineData::QueryHeap;
     using SearchSpaceEdge = std::pair<NodeID, NodeID>;
 
@@ -143,7 +143,7 @@ template <> class AlternativeRouting<algorithm::CH> final : private BasicRouting
                 else
                 {
                     // check whether there is a loop present at the node
-                    const auto loop_weight = SuperT::GetLoopWeight(facade, node);
+                    const auto loop_weight = super::GetLoopWeight(facade, node);
                     const int new_weight_with_loop = new_weight + loop_weight;
                     if (loop_weight != INVALID_EDGE_WEIGHT &&
                         new_weight_with_loop <= *upper_bound_to_shortest_path_weight)
@@ -155,14 +155,14 @@ template <> class AlternativeRouting<algorithm::CH> final : private BasicRouting
             }
         }
 
-        for (auto edge : facade->GetAdjacentEdgeRange(node))
+        for (auto edge : facade.GetAdjacentEdgeRange(node))
         {
             const auto &data = facade.GetEdgeData(edge);
             const bool edge_is_forward_directed =
                 (is_forward_directed ? data.forward : data.backward);
             if (edge_is_forward_directed)
             {
-                const NodeID to = facade->GetTarget(edge);
+                const NodeID to = facade.GetTarget(edge);
                 const int edge_weight = data.weight;
 
                 BOOST_ASSERT(edge_weight > 0);

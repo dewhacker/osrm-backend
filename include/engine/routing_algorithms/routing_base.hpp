@@ -40,7 +40,7 @@ template <typename AlgorithmT> class BasicRouting;
 // purposes. This should be a namespace with free functions.
 template <> class BasicRouting<algorithm::CH>
 {
-  private:
+  protected:
     using FacadeT = datafacade::ContiguousInternalMemoryDataFacade<algorithm::CH>;
     using EdgeData = typename FacadeT::EdgeData;
 
@@ -108,7 +108,7 @@ template <> class BasicRouting<algorithm::CH>
             *std::prev(packed_path_end) == phantom_node_pair.target_phantom.reverse_segment_id.id);
 
         UnpackCHPath(
-            *facade,
+            facade,
             packed_path_begin,
             packed_path_end,
             [this,
@@ -120,30 +120,30 @@ template <> class BasicRouting<algorithm::CH>
                                            const EdgeData &edge_data) {
 
                 BOOST_ASSERT_MSG(!edge_data.shortcut, "original edge flagged as shortcut");
-                const auto name_index = facade->GetNameIndexFromEdgeID(edge_data.id);
-                const auto turn_instruction = facade->GetTurnInstructionForEdgeID(edge_data.id);
+                const auto name_index = facade.GetNameIndexFromEdgeID(edge_data.id);
+                const auto turn_instruction = facade.GetTurnInstructionForEdgeID(edge_data.id);
                 const extractor::TravelMode travel_mode =
                     (unpacked_path.empty() && start_traversed_in_reverse)
                         ? phantom_node_pair.source_phantom.backward_travel_mode
-                        : facade->GetTravelModeForEdgeID(edge_data.id);
+                        : facade.GetTravelModeForEdgeID(edge_data.id);
 
-                const auto geometry_index = facade->GetGeometryIndexForEdgeID(edge_data.id);
+                const auto geometry_index = facade.GetGeometryIndexForEdgeID(edge_data.id);
                 std::vector<NodeID> id_vector;
                 std::vector<EdgeWeight> weight_vector;
                 std::vector<DatasourceID> datasource_vector;
                 if (geometry_index.forward)
                 {
-                    id_vector = facade->GetUncompressedForwardGeometry(geometry_index.id);
-                    weight_vector = facade->GetUncompressedForwardWeights(geometry_index.id);
+                    id_vector = facade.GetUncompressedForwardGeometry(geometry_index.id);
+                    weight_vector = facade.GetUncompressedForwardWeights(geometry_index.id);
                     datasource_vector =
-                        facade->GetUncompressedForwardDatasources(geometry_index.id);
+                        facade.GetUncompressedForwardDatasources(geometry_index.id);
                 }
                 else
                 {
-                    id_vector = facade->GetUncompressedReverseGeometry(geometry_index.id);
-                    weight_vector = facade->GetUncompressedReverseWeights(geometry_index.id);
+                    id_vector = facade.GetUncompressedReverseGeometry(geometry_index.id);
+                    weight_vector = facade.GetUncompressedReverseWeights(geometry_index.id);
                     datasource_vector =
-                        facade->GetUncompressedReverseDatasources(geometry_index.id);
+                        facade.GetUncompressedReverseDatasources(geometry_index.id);
                 }
                 BOOST_ASSERT(id_vector.size() > 0);
                 BOOST_ASSERT(weight_vector.size() > 0);
@@ -181,14 +181,14 @@ template <> class BasicRouting<algorithm::CH>
                                  util::guidance::TurnBearing(0)});
                 }
                 BOOST_ASSERT(unpacked_path.size() > 0);
-                if (facade->hasLaneData(edge_data.id))
-                    unpacked_path.back().lane_data = facade->GetLaneData(edge_data.id);
+                if (facade.hasLaneData(edge_data.id))
+                    unpacked_path.back().lane_data = facade.GetLaneData(edge_data.id);
 
-                unpacked_path.back().entry_classid = facade->GetEntryClassID(edge_data.id);
+                unpacked_path.back().entry_classid = facade.GetEntryClassID(edge_data.id);
                 unpacked_path.back().turn_instruction = turn_instruction;
                 unpacked_path.back().duration_until_turn += (edge_data.weight - total_weight);
-                unpacked_path.back().pre_turn_bearing = facade->PreTurnBearing(edge_data.id);
-                unpacked_path.back().post_turn_bearing = facade->PostTurnBearing(edge_data.id);
+                unpacked_path.back().pre_turn_bearing = facade.PreTurnBearing(edge_data.id);
+                unpacked_path.back().post_turn_bearing = facade.PostTurnBearing(edge_data.id);
             });
 
         std::size_t start_index = 0, end_index = 0;
@@ -201,13 +201,13 @@ template <> class BasicRouting<algorithm::CH>
 
         if (target_traversed_in_reverse)
         {
-            id_vector = facade->GetUncompressedReverseGeometry(
+            id_vector = facade.GetUncompressedReverseGeometry(
                 phantom_node_pair.target_phantom.packed_geometry_id);
 
-            weight_vector = facade->GetUncompressedReverseWeights(
+            weight_vector = facade.GetUncompressedReverseWeights(
                 phantom_node_pair.target_phantom.packed_geometry_id);
 
-            datasource_vector = facade->GetUncompressedReverseDatasources(
+            datasource_vector = facade.GetUncompressedReverseDatasources(
                 phantom_node_pair.target_phantom.packed_geometry_id);
 
             if (is_local_path)
@@ -226,13 +226,13 @@ template <> class BasicRouting<algorithm::CH>
             }
             end_index = phantom_node_pair.target_phantom.fwd_segment_position;
 
-            id_vector = facade->GetUncompressedForwardGeometry(
+            id_vector = facade.GetUncompressedForwardGeometry(
                 phantom_node_pair.target_phantom.packed_geometry_id);
 
-            weight_vector = facade->GetUncompressedForwardWeights(
+            weight_vector = facade.GetUncompressedForwardWeights(
                 phantom_node_pair.target_phantom.packed_geometry_id);
 
-            datasource_vector = facade->GetUncompressedForwardDatasources(
+            datasource_vector = facade.GetUncompressedForwardDatasources(
                 phantom_node_pair.target_phantom.packed_geometry_id);
         }
 

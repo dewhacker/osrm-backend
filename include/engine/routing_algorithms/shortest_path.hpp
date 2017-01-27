@@ -2,15 +2,10 @@
 #define SHORTEST_PATH_HPP
 
 #include "engine/routing_algorithms/routing_base.hpp"
-#include "util/typedefs.hpp"
-
-<<<<<<< HEAD
-#include "engine/datafacade/datafacade_base.hpp"
-=======
 #include "engine/algorithm.hpp"
->>>>>>> Port OSRM, Engine and Datafacades to be algorithm aware
 #include "engine/search_engine_data.hpp"
 #include "util/integer_range.hpp"
+#include "util/typedefs.hpp"
 
 #include <boost/assert.hpp>
 #include <boost/optional.hpp>
@@ -27,8 +22,8 @@ template <typename AlgorithmT> class ShortestPathRouting;
 
 template <> class ShortestPathRouting<algorithm::CH> final : public BasicRouting<algorithm::CH>
 {
+    using super = BasicRouting<algorithm::CH>;
     using FacadeT = datafacade::ContiguousInternalMemoryDataFacade<algorithm::CH>;
-    using SuperT = BasicRouting<algorithm::CH>;
     using QueryHeap = SearchEngineData::QueryHeap;
     SearchEngineData &engine_working_data;
     const static constexpr bool DO_NOT_FORCE_LOOP = false;

@@ -13,7 +13,7 @@ namespace routing_algorithms
 /// by the previous route.
 /// This variation is only an optimazation for graphs with slow queries, for example
 /// not fully contracted graphs.
-void DirectShortestPathRouting::
+void DirectShortestPathRouting<algorithm::CH>::
 operator()(const FacadeT& facade,
            const std::vector<PhantomNodes> &phantom_nodes_vector,
            InternalRouteResult &raw_route_data) const
