@@ -28,8 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef OSRM_ENGINE_BEARING_HPP
 #define OSRM_ENGINE_BEARING_HPP
 
-#include <iostream>
-
 namespace osrm
 {
 namespace engine
@@ -42,7 +40,6 @@ struct Bearing
 
     bool IsValid() const { return bearing >= 0 && bearing <= 360 && range >= 0 && range <= 180; }
 };
-inline std::ostream &operator<<(std::ostream &out, const Bearing &) { return out << "Bearing()"; }
 
 inline bool operator==(const Bearing lhs, const Bearing rhs)
 {

@@ -338,7 +338,6 @@ Status TripPlugin::HandleRequest(const std::shared_ptr<const datafacade::BaseDat
 
         trips.push_back(std::move(scc_route));
     }
-
     if (trips.empty())
     {
         return Error("NoTrips", "Cannot find trips", json_result);

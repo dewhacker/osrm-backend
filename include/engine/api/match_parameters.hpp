@@ -32,8 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vector>
 
-#include <iostream>
-
 namespace osrm
 {
 namespace engine
@@ -75,11 +73,6 @@ struct MatchParameters : public RouteParameters
                (timestamps.empty() || timestamps.size() == coordinates.size());
     }
 };
-
-inline std::ostream &operator<<(std::ostream &out, const MatchParameters &)
-{
-    return out << "MatchParameters()";
-}
 }
 }
 }

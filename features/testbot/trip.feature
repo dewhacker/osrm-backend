@@ -24,7 +24,6 @@ Feature: Basic trip planning
             | a,b,c,d   | abcda  | 7.6       |
             | d,b,c,a   | dbcad  | 7.6       |
 
-
     Scenario: Testbot - Trip planning with more than 10 nodes
         Given the node map
             """
@@ -227,7 +226,6 @@ Feature: Basic trip planning
             | a,b,c,d   | abcda  | 7.6       | 1,1,1.00009,1,1,0.99991,1.00009,1,1,1,1.00009,0.99991,1,1              |
             | d,b,c,a   | dbcad  | 7.6       | 1.00009,0.99991,1,1,1.00009,1,1,0.99991,1.00009,1,1,1,1.00009,0.99991  |
 
-
     Scenario: Testbot - Trip with geometry details of polyline
         Given the query options
             | geometries | polyline  |
@@ -249,7 +247,6 @@ Feature: Basic trip planning
             | waypoints | trips  | durations | geometry                                                              |
             | a,b,c,d   | abcda  | 7.6       | 1,1,1,1.00009,0.99991,1,1,1.00009,1,1,0.99991,1.00009,1,1             |
             | d,b,c,a   | dbcad  | 7.6       | 0.99991,1.00009,1,1,1,1.00009,0.99991,1,1,1.00009,1,1,0.99991,1.00009 |
-
 
     Scenario: Testbot - Trip with geometry details of polyline6
         Given the query options
